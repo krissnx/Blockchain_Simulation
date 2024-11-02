@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Simulation</title>
+    <style>
+        head, body {
+            font-family: Helvetica;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        .button {
+            color: white;
+            display: flex;
+            align-items:center;
+            justify-content:center;
+            margin: auto;
+            border-radius: 10px;
+            cursor: pointer;
+
+            &:hover:not(.loading) {
+                opacity: 0.33;
+            }
+
+            &.start {
+                background-color: green;
+            }
+
+            &.stop {
+                background-color: red;
+            }
+
+            &.loading {
+                background-color: grey;
+                cursor: default;
+            }
+        }
+
+        .simulation-button {
+            width: 70px;
+            height: 30px;
+            position: absolute;
+            top: 10px;
+            left: 500px;
+        }
+
+        .add-miner-button {
+            width: 170px;
+            height: 30px;
+            position: absolute;
+            top: 45px;
+            left: 500px;
+            background-color: #517ED1;
+        }
+
+        .add-cheater-button {
+            width: 170px;
+            height: 30px;
+            position: absolute;
+            top: 80px;
+            left: 500px;
+            background-color: #596987;
+        }
+
+        .select-blockchains-field {
+            display: flex;
+        }
+
+        .blockchain-button {
+            align-items: center;
+            justify-content: center;
+            display: inline-flex;
+            flex-direction: row;
+            width: 50px;
+            height: 30px;
+            top: 50px;
+            color: white;
+            background-color: #303030;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 5px 7px;
+
+            &.unselected {
+                opacity: 0.33;
+            }
+        }
+
+        .blockchain-field {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 0 10px;
+            position: relative;
+            min-height: 200px;
+            background-color: #E9E9E9;
+            border-radius: 10px;
+            top: 10px;
+
+            .blockchain {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                flex-shrink: 0;
+                margin: 2px 0;
+
+                &.unselected {
+                    .square {
+                        opacity: 0.15;
+                    }
+                }
+            }
+        }
+
+        .square {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            margin-right: 10px;
+            background-color: #EB2B77;
+            position: relative;
+            z-index: 1;
+
+            &:not(:last-child)::after {
+              content: " ";
+              display: block;
+              position: absolute;
+              height: 1px;
+              background: black;
+              width: 10px;
+              left: 100%;
+              top: 50%;
+            }
+
+            &:hover {
+                opacity: 0.33;
+            }
+        }
+
+        .overlay {
+            position: absolute;
+            top: -70px;
+            left: 0;
+            width: 150px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none;
+            z-index: 2;
+        }
+
+        .miners-count {
+            font-style: italic;
+        }
+
+        .info-block {
+            width: 700px;
+            height: 100px;
+            position: absolute;
+            top: 10px;
+            padding: 5px 10px;
+            right: 10px;
+            border: gray 1px solid;
+            border-radius: 15px;
+            font-size: 11px;
+            overflow-y: scroll;
+
+            .info-field {
+                display: none;
+                font-weight: bold;
+
+                .block-property {
+                    font-weight: normal;
+                }
+            }
+
+            .terminal-field {
+                .info {
+                    background-color: #E3EFF8;
+                }
+
+                .accepted {
+                    background-color: #E9F8E3;
+                }
+
+                .refused {
+                    background-color: #F8E3E4
+                }
+            }
+        }
+
+        .miners-field {
+            position: relative;
+            top: 50px;
+            font-size: 13px;
+
+            .miner-block {
+                border: black 1px dashed;
+                border-radius: 15px;
+                display: inline-block;
+                width: 150px;
+                padding: 10px;
+                margin-left: 20px;
+                margin-bottom: 20px;
+
+                div {
+                    margin-bottom: 5px;
+                }
+            }
+
+            .delete-button {
+                width: 50px;
+                font-size: 11px;
+                position: relative;
+                top: 0;
+                right: -95px;
+                cursor: pointer;
+
+                &.clicked {
+                    cursor: default;
+                }
+            }
+
+            .miner-block:hover {
+                background-color: #EAEAEA;
+            }
+
+            .miner-block.cheater:hover {
+                background-color: #EBADAD;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Blockchain Simulation</h1>
+    <div class="miners-count-field">
+        <p>Nombre de mineurs : 0</p>
+    </div>
+    <div class="button simulation-button start">
+        <span>Start</span>
+    </div>
+    <div class="button add-button add-miner-button hide">
+        <span>Ajouter un mineur</span>
+    </div>
+    <div class="button add-button add-cheater-button hide">
+        <span>Ajouter un tricheur</span>
+    </div>
+    <div class="blockchain-field">
+        <div class="blockchain" data-id="A">
+<!--        <div class="square" data-number="1" data-hash="ABC123" data-nonce="12345" data-miner="42"></div>-->
+<!--        <div class="square" data-number="2" data-hash="DEF456" data-nonce="678910" data-miner="53"></div>-->
+        </div>
+    </div>
+    <div class="info-block">
+        <div class="info-field">
+            <div class="entry"><span>Block Number: <span class="block-property" id="block-number"></span></span></div>
+            <div><span>Hash du block précédent: <span class="block-property" id="block-hash"></span></span></div>
+            <div><span>Nonce: <span class="block-property" id="block-nonce"></span></span></div>
+            <div><span>Miner ID: <span class="block-property" id="block-miner"></span></span></div>
+            <div><span>Date de découverte: <span class="block-property" id="block-date"></span></span></div>
+        </div>
+        <div class="terminal-field">
+            <div><span><b>Début de la simulation</b></span></div>
+        </div>
+    </div>
+    <div class="select-blockchains-field">
+        <div class="blockchain-button hide" data-blockchain="all">Tout</div>
+        <div class="blockchain-button hide unselected" data-blockchain="A">A</div>
+    </div>
+    <div class="miners-field">
+<!--        <div class="miner-block" data-id='test'>-->
+<!--            <div class="delete-button"><span>Supprimer</span></div>-->
+<!--            <div><b><span class="miner-name">Miner 0</span></b></div>-->
+<!--            <br>-->
+<!--            <div><span class="miner-balance">Solde: 78.2842</span></div>-->
+<!--        </div>-->
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+
+        var stop = false;
+        var action = 0;
+        var selectedMiner = null;
+
+        $('body').on('mouseover', '.square', function() {
+            $('.terminal-field').css('display','none');
+            $('.info-field').css('display','block');
+            $('#block-number').text($(this).data('number'));
+            $('#block-hash').text($(this).data('hash'));
+            $('#block-nonce').text($(this).data('nonce'));
+            $('#block-miner').text($(this).data('miner'));
+            $('#block-date').text($(this).data('date'));
+        }).on('mouseleave', '.square', function () {
+            $('.info-field').css('display','none');
+            $('.block-property').text('');
+            $('.terminal-field').css('display','block');
+        });
+
+        function updateBlockData() {
+            if (!stop) {
+                $.ajax({
+                    url: '/get_block_data',
+                    method: 'GET',
+                    data: {'action': action, 'selectedMiner': selectedMiner},
+                    success: function(data) {
+                        // Update the HTML with the received block data
+                        if (data.nb_miners) {
+                            $('.miners-count-field p').text('Nombre de mineurs : ' + data.nb_miners);
+                        }
+                        if (data.block_data) {
+                            var blockchain = $('.blockchain').length > 1 || data.fork_data ? data.block_data.blockchain : 'all';
+                            $('.blockchain[data-id="' + data.block_data.blockchain + '"]').append('<div class="square" style="background-color:' + data.block_data.color + '" data-number="' + data.block_data.number + '" data-hash="' + data.block_data.hash + '" data-nonce="' + data.block_data.nonce + '" data-miner="' + data.block_data.miner + '" data-date="' + data.block_data.date + '" data-blockchain="' + blockchain + '"></div>');
+                        }
+                        if (data.fork_data) {
+                            var lastBlock = $('.blockchain[data-id="' + data.block_data.blockchain + '"] .square:last-child');
+                            lastBlock.attr('data-fork', data.fork_data.blockchain);
+                            var paddingBlockchain = lastBlock.position().left - (lastBlock.width() / 2) - 2;
+                            var newBlockchain = $('<div class="blockchain" data-id="' + data.fork_data.blockchain + '"></div>');
+                            var newBlock = $('<div class="square" style="background-color:' + data.fork_data.color + '" data-number="' + data.fork_data.number + '" data-hash="' + data.fork_data.hash + '" data-nonce="' + data.fork_data.nonce + '" data-miner="' + data.fork_data.miner + '" data-date="' + data.fork_data.date + '" data-blockchain="' + data.fork_data.blockchain + '"></div>');
+                            newBlockchain.css({
+                                'padding-left': paddingBlockchain + 'px'
+                            });
+                            newBlockchain.append(newBlock);
+                            $('.blockchain-field').append(newBlockchain);
+                            if($('.blockchain-button').hasClass('hide')){
+                                $('.blockchain-button').removeClass('hide');
+                            }
+                            $('.select-blockchains-field').append('<div class="blockchain-button unselected" data-blockchain="' + data.fork_data.blockchain + '">' + data.fork_data.blockchain + '</div>');
+                        }
+                        if (data.infos) {
+                            for (i in data.infos) {
+                                $('.terminal-field').append('<div class="'+ data.infos[i]['class'] +'"><span>- ' + data.infos[i]['message'] + '</span></div>');
+                            }
+                        }
+                        if(data.miners_data) {
+                            for (i in data.miners_data) {
+                                minerInfos = $('.miner-block[data-id="' + data.miners_data[i]['id'] + '"]');
+                                if (minerInfos.length == 0) {
+                                    $('.miners-field').append(`<div class="miner-block" style="border-color:` + data.miners_data[i]['color']  + `" data-id="` + data.miners_data[i]['id'] + `" data-blockchain="` + data.miners_data[i]['blockchain'] + `">
+                                                                    <div class="delete-button"><span>Supprimer</span></div>
+                                                                    <div><b><span>Mineur <span class="miner-name">` + data.miners_data[i]['id'] + `</span></span></b></div>
+                                                                    <br>
+                                                                    <div><span>Solde: <span class="miner-balance">0</span> BTC</span></div>
+                                                                    <div><span>Puissance de calcul: <span class="miner-compute-power">` + data.miners_data[i]['puissance'] + `</div>
+                                                                </div>`);
+                                }
+                                else {
+                                    minerInfos.data('blockchain', data.miners_data[i]['blockchain']);
+                                }
+                                minerInfos.find('.miner-balance').text(data.miners_data[i]['balance']);
+                                if (data.miners_data[i]['corruption']) {
+                                    $('.miner-block[data-id="' + data.miners_data[i]['id'] + '"]').addClass('cheater');
+                                }
+                                else {
+                                    $('.miner-block[data-id="' + data.miners_data[i]['id'] + '"]').removeClass('cheater');
+                                }
+                            }
+                        }
+                        if (data.action) {
+                            action = 0;
+                            if (data.action == 'add') {
+                                $('.add-miner-button').removeClass('loading').text('Ajouter un mineur');
+                                $('.add-cheater-button').removeClass('loading').text('Ajouter un tricheur');
+                            }
+                            if (data.action == 'delete') {
+                                $('.miner-block[data-id="' + selectedMiner + '"]').remove();
+                                selectedMiner = null;
+                            }
+                        }
+                    },
+                    complete: function(data) {
+                        if(!stop && $('.add-miner-button').hasClass('hide')) {
+                            $('.add-miner-button, .add-cheater-button').removeClass('hide')
+                        }
+                        setTimeout(updateBlockData,3000);
+                    }
+                });
+            }
+            else {
+                $('.terminal-field').append('<div><b><span>Fin de la simulation</span></b></div>');
+            }
+        }
+
+
+        $('body').on('click', '.simulation-button.start', function() {
+            $.ajax({
+                url: '/run_simulation',
+                method: 'GET',
+                success: function(data) {
+                    $('.simulation-button').removeClass('start').addClass('stop');
+                    $('.simulation-button span').text('Stop');
+                },
+                complete: function(data) {
+                    setTimeout(updateBlockData, 3000);
+                }
+            });
+        });
+
+        $('body').on('click', '.simulation-button.stop', function() {
+            stop = true;
+            $('.simulation-button, .add-miner-button, .add-cheater-button').removeClass('stop').addClass('hide');
+            $.ajax({
+                url: '/stop_simulation',
+                method: 'GET'
+            });
+        });
+
+        $('body').on('click', '.add-button:not(.loading)', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if($(this).hasClass('add-miner-button')) {
+                action = 1;
+            }
+            if($(this).hasClass('add-cheater-button')) {
+                action = 3;
+            }
+            $('.add-button').addClass('loading').text("Ajout en cours");
+        });
+
+        $('body').on('click', '.delete-button:not(.clicked)', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            action = 2;
+            selectedMiner = $(this).closest('.miner-block').data('id');
+            $(this).text('Suppression').addClass('clicked');
+        });
+
+        $('body').on('click', '.blockchain-button', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var blockchainId = $(this).data('blockchain');
+            $('.blockchain-button').addClass('unselected');
+            $(this).removeClass('unselected');
+            if (blockchainId == 'all') {
+                $('.blockchain').removeClass('unselected');
+                $('.blockchain[data-id="A"] .square').css('opacity', 1);
+            }
+            else {
+                $('.blockchain[data-id!="' + blockchainId + '"]').addClass('unselected');
+                $('.blockchain[data-id="' + blockchainId + '"]').removeClass('unselected');
+                var A_squares = $('.blockchain[data-id="A"] .square');
+                if (blockchainId != 'A') {
+                    var opacity = 1
+                    for (var i = 0; i < A_squares.length; i++) {
+                        if ($(A_squares[i]).data('fork') == blockchainId) {
+                                opacity = 0.15;
+                        }
+                        $(A_squares[i]).css('opacity', opacity);
+                    }
+                }
+                else {
+                    for (var i = 0; i < A_squares.length; i++) {
+                        $(A_squares[i]).css('opacity', 1);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
